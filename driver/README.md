@@ -1,6 +1,6 @@
 # Run driver (§3, §4.1)
 
-Starts any session without the desktop interface. Owner: Colum.
+Starts any session without the desktop interface. Owner: Person D.
 
 ## Session config fields
 `paper_id`, `model`, `harness` (lemonade-stand or reference-scaffold), `variant`, `instruction_version` (original, p1, p2), `fault_id` (none or from `faults/faults.csv`), `repeat`, `seed`, `condition` (autonomous, checkpoint, human-assisted).

@@ -1,6 +1,6 @@
 # Scoring and metrics (§4.4, Table 2)
 
-Reads only retained session exports. Owner: Niccolò.
+Reads only retained session exports. Owner: Person E.
 
 | Construct | Measure |
 |---|---|

@@ -1,6 +1,6 @@
 # AI Scientist Automated Reviewer (§3, Table 2)
 
-Scores each session report. Owner: Anika.
+Scores each session report. Owner: Person B.
 
 1. Pin the reviewer version and the reviewer model its authors recommend in `config/`.
 2. The reviewer model must not be either study model. It takes no part in any session.
