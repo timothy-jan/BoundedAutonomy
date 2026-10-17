@@ -9,15 +9,15 @@ We run Lemonade Stand at one frozen version, four architecture variants inside i
 | Folder | Contents | Prospectus | Owner |
 |---|---|---|---|
 | `docs/` | Schedule, protocols, decision log | §7, §8 | Timothy |
-| `tasks/` | Task subset, published values, tolerances, paraphrases | §2, §4.2 | Timothy, Person A |
-| `harness/` | Frozen Lemonade Stand tag, architecture variants, reference scaffold | §4.1 | Person C, Person B|
-| `driver/` | Scripted run driver and session configs | §3, §4.1 | Person D |
-| `faults/` | Fault injection set | §4.3 | Person A |
-| `reviewer/` | AI Scientist Automated Reviewer setup and adapted form | §3 | Person B |
-| `scoring/` | Logging schema and metric pipeline | §4.4, Table 2 | Person E |
+| `tasks/` | Task subset, published values, tolerances, paraphrases | §2, §4.2 | Timothy, Shivi |
+| `harness/` | Frozen Lemonade Stand tag, architecture variants, reference scaffold | §4.1 | Marie, Anika |
+| `driver/` | Scripted run driver and session configs | §3, §4.1 | Colum |
+| `faults/` | Fault injection set | §4.3 | Shivi |
+| `reviewer/` | AI Scientist Automated Reviewer setup and adapted form | §3 | Anika |
+| `scoring/` | Logging schema and metric pipeline | §4.4, Table 2 | Niccolò |
 | `experiments/` | Pilot and session block definitions, human condition assignments | §3, §4.4, Table 1 | Timothy |
-| `runs/` | Session exports (not committed) | §3 | Person D |
-| `analysis/` | Traceability sample, failure taxonomy, variance split | §4.3, Table 2 | Person E |
+| `runs/` | Session exports (not committed) | §3 | Colum |
+| `analysis/` | Traceability sample, failure taxonomy, variance split | §4.3, Table 2 | Niccolò |
 | `paper/` | Draft paper, figures, AI use disclosure | §8 | Everyone |
 | `presentation/` | Final presentation | §8 | Everyone |
 | `evidence/` | Evidence package linking each result to its sources | §8 | Timothy |

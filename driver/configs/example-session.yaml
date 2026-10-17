@@ -1,0 +1,12 @@
+paper_id: P1
+model: model-a
+harness: lemonade-stand
+variant: default
+instruction_version: original
+fault_id: none
+repeat: 1
+seed: 1
+condition: autonomous
+caps:
+  hours: 6
+  tokens: 5000000
