@@ -26,7 +26,7 @@ We run Lemonade Stand at one frozen version, four architecture variants inside i
 ## Rules
 
 1. Every session uses the frozen Lemonade Stand tag in `harness/lemonade-stand/FROZEN_TAG.md`.
-2. `tasks/tasks.csv` is locked once tolerances are fixed. Changes go through a pull request with a reason.
+2. `tasks/tasks.csv` is unlocked for pull requests until the Oct 26 pilot, then relocked (see `tasks/README.md`).
 3. Any change to scope, sequence, or method is recorded in `docs/decisions/decision-log.md` (§7).
 4. Scoring reads only from retained session exports. Nothing in `scoring/` runs inside a session.
 5. Session exports and API keys are never committed.
