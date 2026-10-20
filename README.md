@@ -25,6 +25,8 @@ We run Lemonade Stand at one frozen version, four architecture variants inside i
 
 ## Rules
 
+All changes go through pull requests; see `CONTRIBUTING.md`.
+
 1. Every session uses the frozen Lemonade Stand tag in `harness/lemonade-stand/FROZEN_TAG.md`.
 2. `tasks/tasks.csv` is unlocked for pull requests until the Oct 26 pilot, then relocked (see `tasks/README.md`).
 3. Any change to scope, sequence, or method is recorded in `docs/decisions/decision-log.md` (§7).
