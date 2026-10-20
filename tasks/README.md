@@ -8,6 +8,8 @@
 4. Published values and tolerances must still match the official ReplicationBench task files. Say in the pull request if a change touches either.
 5. Before the pilot on Oct 26, set every row's `locked` to `yes` and tag the commit `tasks-locked-YYYY-MM-DD`. After that, changes need a reason in the pull request and an entry in `docs/decisions/decision-log.md`.
 
-The Oct 18 snapshot is preserved as the git tag `tasks-locked-2026-10-18`.
+The Oct 18 version is preserved at commit `4a1bf2c` ("tasks-locked-2026-10-18").
 
-`papers.csv` lists the five papers. `instruction_p1` and `instruction_p2` hold the two paraphrases (Table 1, Robustness).
+`papers.csv` lists the five papers and flags the four used in the human conditions.
+
+`instruction_p1` and `instruction_p2` hold the two paraphrases (Table 1, Robustness). They were drafted with Claude on Oct 20 and keep every number, symbol, parameter name and output format from the original. Each pair still needs a human check for equal meaning; the checker's name goes in `paraphrase_checked_by`. If a Claude model is chosen as a study model, note the paraphrase source in the paper's limitations.
