@@ -19,9 +19,9 @@ git checkout 92ae62f586e2f325cc30460058674a6ecee236fa
 cat VERSION   # 1.0.0-rc.57
 ```
 
-## Notes for the driver
+## Notes for the Harbor agent
 
-- rc.57 replaced per-chat and per-bot dollar limits with one daily USD cost limit shared across all model work. It keeps Stop spending and the technical time, turn and call limits. The driver must enforce the 5M token and 6 hour caps per session itself.
-- Set the daily USD limit high enough that four parallel sessions cannot hit it mid-session, or a session would stop for a reason outside the study.
+- rc.57 replaced per-chat and per-bot dollar limits with one daily USD cost limit shared across all model work. It keeps Stop spending and the technical time, turn and call limits. Harbor's 3,600 s agent limit applies to every trial.
+- Set the daily USD limit high enough that eight parallel trials cannot hit it mid-session, or a session would stop for a reason outside the study.
 
-If a variant needs code changes, pin a new commit before the pilot and log it in `docs/decisions/decision-log.md`.
+Lemonade Stand is one of four evaluated harnesses. If the Harbor integration needs code changes, pin a new commit before the pilot and log it in `docs/decisions/decision-log.md`.

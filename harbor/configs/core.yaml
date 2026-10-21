@@ -1,0 +1,29 @@
+jobs_dir: jobs
+n_attempts: 3
+timeout_multiplier: 1.0
+agents:
+  - name: terminus-2
+    model_name: anthropic/MODEL_A
+  - name: terminus-2
+    model_name: openai/MODEL_B
+  - name: mini-swe-agent
+    model_name: anthropic/MODEL_A
+  - name: mini-swe-agent
+    model_name: openai/MODEL_B
+  - name: claude-code
+    model_name: anthropic/MODEL_A
+  - name: codex
+    model_name: openai/MODEL_B
+orchestrator:
+  type: local
+  n_concurrent_trials: 8
+  quiet: false
+environment:
+  type: docker
+  force_build: false
+  delete: true
+  env:
+    - OPENAI_API_KEY=${OPENAI_API_KEY}
+    - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+datasets:
+  - path: datasets/replicationbench

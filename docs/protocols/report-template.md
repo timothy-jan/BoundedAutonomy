@@ -1,14 +1,10 @@
-# Session report
+# Trial report
 
-Identical across both harnesses and all variants.
+Appended identically to every task instruction.
 
-## Method
-How the replication was attempted, in under 200 words.
+At the end, write `report.md` in the working directory with:
 
-## Results
-
-| Task ID | Reported value | Units | Confidence (0 to 1) | Supporting artifact |
-|---|---|---|---|---|
-
-## Claims
-Each claim cites a file or step retained in the session export.
+1. Method: how you computed the result, in under 150 words.
+2. Result: the value you submitted, with units.
+3. Confidence: a number from 0 to 1 that your result is within tolerance of the published value.
+4. Evidence: the file or command output behind each claim.
