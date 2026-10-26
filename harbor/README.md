@@ -18,6 +18,16 @@ The task count after generation must be 72. Record the Harbor version and adapte
 
 Run the oracle agent on all 72 tasks before any real agent. Every trial must score 1. Record any failure and its cause in `VERSION.md`.
 
+```
+harbor run -c adapters/replicationbench/replicationbench.yaml -a oracle \
+  -x "*abacus__*" -x "*astm3__*" -x "*hubble_trails__*" \
+  --no-delete -n 8
+```
+
+- The three `-x` filters drop the GPU papers, so the job has 72 tasks even if the dataset was generated without our exclude list or pulled from the registry (`-d replicationbench@1.0`, 90 tasks).
+- `--no-delete` keeps each task's Docker image. With delete on, Harbor runs `docker compose down --rmi local` after every trial, so every trial rebuilds its image and re-downloads its dataset. Keep delete off for every run in this study and check disk with `docker system df`.
+- `-n` sets parallel trials (Harbor's default is 4). Image builds are network and disk bound, so raise it as far as the machine allows.
+
 ## Job configs
 
 | File | Block | Trials |
