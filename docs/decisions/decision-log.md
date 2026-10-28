@@ -19,3 +19,4 @@
 | 2026-10-20 | Human conditions use Claude Code on Model A; papers gw_nsbh, gw_cosmo, mars_clouds, galaxy_manifold; re-randomized with seed 20261020 | method | fable_mps is no longer in the task set | Timothy |
 | 2026-10-20 | Reviewer scores a stratified sample of 300 trial reports plus all 24 human sessions | method | Scoring all 2,096 reports with a 5-review ensemble is not needed for the agreement test | Timothy |
 | 2026-10-20 | Superseded: custom driver, four Lemonade Stand variants, ReplicationBench Inspect scaffold as reference | method | Replaced by Harbor and its built-in agents | Timothy |
+| 2026-10-28 | Every task instruction is extended with the report request via Harbor's extra_instruction_paths, and /app/result.json and /app/report.md are collected as artifacts | method | Scoring needs the reported value and the confidence; all agents must get identical text | pending Timothy |
