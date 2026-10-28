@@ -9,3 +9,6 @@ __pycache__/
 venv/
 .ipynb_checkpoints/
 .DS_Store
+
+# Local Harbor job exports (Person B hands these over out of band)
+jobs/
