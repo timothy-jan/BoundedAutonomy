@@ -153,7 +153,12 @@ def stream_chat(base, token, body, timeout, out_path):
                 if tail and text.endswith(tail):
                     text = text[: -len(tail)]
             elif kind == "done":
-                if status != "error":
+                # rc.57 reports a failed model call inside the done frame
+                # (chat.py: meta["error"] = {"code", "message"}), not as a
+                # separate error frame.
+                if frame.get("error"):
+                    status = "provider_error"
+                elif status not in ("error", "provider_error"):
                     status = "done"  # group chats send one per speaker; keep reading
             elif kind == "error":
                 status = "error"
@@ -266,11 +271,16 @@ def main() -> int:
         server_version=health.get("version"),
         n_tool_calls=sum(1 for f in frames if f.get("type") == "tool_start"),
         fake=a.fake,
+        provider_errors=[f["error"] for f in frames
+                         if f.get("type") in ("done", "error") and f.get("error")],
     )
     (log / "usage.json").write_text(json.dumps(usage, indent=2))
     print(json.dumps({"status": status, "cost_usd": usage.get("cost_usd"),
                       "version": health.get("version")}))
-    return 1 if status == "error" or status.startswith("http_") else 0
+    # A trial whose model was never reached is a setup failure, not a score of
+    # 0: exit non-zero so Harbor records an exception.
+    failed = status in ("error", "provider_error") or status.startswith("http_")
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
