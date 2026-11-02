@@ -40,6 +40,16 @@ in rc.57 changed this.
 4. `--ak` examples used `key:float=value`. Harbor 0.25.0 takes `key=value`.
 5. Harbor's `--effort` flag was ignored. It now sets Lemonade Stand's effort.
 
+## Task data access (added Nov 1)
+
+ReplicationBench puts task data in `/assets` and paper context in
+`/app/resources`. rc.57's file tools see only the files folder (`/app`),
+reject symlinks that leave it, and cap files at 1 MiB and the folder at
+256 MiB. The agent copies `/assets` into `/app/assets` when it is ≤ 200 MiB
+and records the outcome in `agent/assets.txt`. Bigger datasets stay out of
+reach, a second gap versus shell-based agents. gw_cosmo has no data files,
+so it isn't affected.
+
 ## Why the code question matters
 
 All four gw_cosmo tasks ask for numbers that come from simulating 10,000

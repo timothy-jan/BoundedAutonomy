@@ -61,6 +61,7 @@ LS_SERVER = f"{LS_SRC}/app/server"
 LS_HOME = f"{LS_ROOT}/home"  # fresh per trial: every container is new
 TASK_DIR = "/app"  # ReplicationBench WORKDIR; grader reads /app/result.json
 LOG_DIR = "/logs/agent"  # synced to <trial>/agent/ on the host
+ASSETS_COPY_LIMIT_KB = 200 * 1024  # leave room under the 256 MiB folder cap
 
 HERE = Path(__file__).resolve().parent
 # Top-level folders the server never imports (checked on rc.57: the stripped
@@ -88,6 +89,7 @@ class LemonadeStandAgent(BaseInstalledAgent):
         max_tokens: int = 5_000_000,
         effort: str = "auto",
         fake: bool = False,
+        allow_unfrozen: bool = False,
         server_port: int = 8272,
         turn_timeout_sec: int = 3300,
         reasoning_effort: str | None = None,
@@ -114,6 +116,8 @@ class LemonadeStandAgent(BaseInstalledAgent):
         # Lemonade Stand's built-in fake model: no API calls, no cost. For
         # testing the plumbing only; results don't count.
         self.fake = str(fake).lower() in ("1", "true", "yes")
+        # Every study session uses the frozen commit (repo README, rule 1).
+        self.allow_unfrozen = str(allow_unfrozen).lower() in ("1", "true", "yes")
         self.server_port = int(server_port)
         # Headroom under the adapter's 3,600 s limit so usage.json is written.
         self.turn_timeout_sec = int(turn_timeout_sec)
@@ -136,10 +140,15 @@ class LemonadeStandAgent(BaseInstalledAgent):
         version_file = Path(src) / "VERSION"
         found = version_file.read_text().strip() if version_file.is_file() else "unknown"
         if found != FROZEN_VERSION:
-            self.logger.warning(
-                f"LS_SOURCE_DIR is {found}, not the frozen {FROZEN_VERSION}. "
-                "Results will not count for the study."
+            message = (
+                f"LS_SOURCE_DIR is Lemonade Stand {found}, not the frozen "
+                f"{FROZEN_VERSION} (commit {FROZEN_COMMIT}); see FROZEN_TAG.md."
             )
+            if not self.allow_unfrozen:
+                raise RuntimeError(
+                    message + " Pass --ak allow_unfrozen:bool=true for tests only."
+                )
+            self.logger.warning(message + " Results will not count for the study.")
 
         await self.exec_as_root(
             environment,
@@ -161,6 +170,25 @@ class LemonadeStandAgent(BaseInstalledAgent):
         await self.exec_as_agent(
             environment,
             command=f"mkdir -p {LS_HOME} && ln -sfn {TASK_DIR} {LS_HOME}/files",
+        )
+        # ReplicationBench puts task data in /assets, outside the files folder.
+        # rc.57's file tools reject symlinks that leave the folder and cap it
+        # at 256 MiB, so copy the data in when it fits and log the outcome.
+        # Shell-based agents read /assets directly.
+        await self.exec_as_root(
+            environment,
+            command=(
+                f"mkdir -p {LOG_DIR}; "
+                "if [ -d /assets ] && [ -n \"$(ls -A /assets 2>/dev/null)\" ]; then "
+                "kb=$(du -sk /assets | cut -f1); "
+                f"if [ \"$kb\" -le {ASSETS_COPY_LIMIT_KB} ]; then "
+                f"mkdir -p {TASK_DIR}/assets && cp -a /assets/. {TASK_DIR}/assets/ "
+                f"&& chmod -R a+rX {TASK_DIR}/assets && echo \"assets copied: ${{kb}} KB\"; "
+                "else echo \"assets NOT copied: ${kb} KB is over the limit\"; fi; "
+                "else echo 'no /assets data'; fi "
+                f"| tee {LOG_DIR}/assets.txt"
+            ),
+            timeout_sec=600,
         )
         await self._upload_config_text(
             environment,

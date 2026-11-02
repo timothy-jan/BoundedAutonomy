@@ -19,10 +19,12 @@ exists in this version, so there is none here.
 
 ## How a trial runs
 
-1. `install()` uploads the checkout (minus `app/desktop`, `research`,
-   `modeltest`), checks for Python ≥ 3.10, makes a fresh home, links the
-   home's `files` folder to `/app`, and writes the daily USD limit in rc.57's
-   format.
+1. `install()` refuses any checkout that isn't rc.57 (override with
+   `--ak allow_unfrozen:bool=true`, tests only), uploads it (minus
+   `app/desktop`, `research`, `modeltest`), checks for Python ≥ 3.10, makes
+   a fresh home, links the home's `files` folder to `/app`, copies `/assets`
+   into `/app/assets` when it is ≤ 200 MiB, and writes the daily USD limit in
+   rc.57's format.
 2. `run()` starts `python3 app/server/stand.py` in the background with
    `LEMONADE_STAND_HOME` set, then runs `ls_driver.py`.
 3. The driver waits for `/api/health`, maps the Harbor model to rc.57's
@@ -90,6 +92,7 @@ Each trial's `agent/` folder also holds:
   `fake`.
 * `stream.jsonl`: every event frame from the chat.
 * `final_reply.md`: the reply text.
+* `assets.txt`: whether `/assets` was copied in for the bots, and its size.
 * `server.log`, `driver.txt`: raw logs.
 
 `fake: true` trials are plumbing tests and do not count.
