@@ -36,7 +36,7 @@ for model in "$@"; do
     --ae LS_SOURCE_DIR="$SRC" \
     --ak daily_usd_limit="${DAILY_USD_LIMIT:-100}" \
     --ak max_tokens="${MAX_TOKENS:-5000000}" \
-    "${extra[@]}" \
+    ${extra[@]+"${extra[@]}"} \
     -o "${JOBS_DIR:-jobs}"
 done
 
