@@ -83,12 +83,15 @@ def post_json(base, token, path, body, timeout=10):
 
 
 def ledger_tokens(db_path: Path) -> int:
-    """Settled input + output tokens so far (input includes cache reads)."""
+    """Settled tokens so far: uncached input + cache reads + cache writes +
+    output. rc.57 stores tokens_in without the cached part (providers.py,
+    provider_responses.py), so the cache columns are added back."""
     try:
         con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=5)
         try:
             (n,) = con.execute(
-                "SELECT COALESCE(SUM(COALESCE(tokens_in,0)+COALESCE(tokens_out,0)),0) "
+                "SELECT COALESCE(SUM(COALESCE(tokens_in,0)+COALESCE(cache_read,0)"
+                "+COALESCE(cache_write,0)+COALESCE(tokens_out,0)),0) "
                 "FROM spend_events WHERE kind='settle'"
             ).fetchone()
         finally:
@@ -184,9 +187,10 @@ def usage_from_ledger(db_path: Path) -> dict:
         u = per_model.setdefault(
             model, {"n_input_tokens": 0, "n_output_tokens": 0, "n_cache_tokens": 0, "cost_usd": 0.0}
         )
-        # Ledger tokens_in already includes cache reads, matching Harbor's
-        # n_input_tokens ("including cache").
-        u["n_input_tokens"] += int(tin)
+        # rc.57's tokens_in excludes cached input for both providers
+        # (Anthropic reports it separately; the OpenAI path subtracts it).
+        # Harbor's n_input_tokens includes cache, so add reads and writes back.
+        u["n_input_tokens"] += int(tin) + int(cread) + int(cwrite)
         u["n_cache_tokens"] += int(cread)
         u["n_output_tokens"] += int(tout)
         u["cost_usd"] += float(usd)
