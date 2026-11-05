@@ -25,7 +25,7 @@ Rows are never aggregated in this file. Consistency and variance measures group 
 | `agent` | str | `agent_info.name` | `oracle`, `terminus-2`, `claude-code`, ... |
 | `agent_version` | str | `agent_info.version` | |
 | `model` | str | `agent_info.model_info`, else `config.agent.model_name` | Null for the oracle |
-| `status` | str | derived | `ok`, `exception`, or `no_verifier` |
+| `status` | str | derived | `ok`, `capped` (Harbor's agent time limit), `exception`, or `no_verifier` |
 | `reward` | float | `verifier_result.rewards.reward` | Mirrors `verifier/reward.txt` |
 | `passed` | bool | `reward == 1` | Harbor's own pass or fail |
 | `reported_value` | json | see **Reported value** below | Scalar, list or dict |
@@ -43,7 +43,12 @@ Rows are never aggregated in this file. Consistency and variance measures group 
 | `n_output_tokens` | int | `agent_result.n_output_tokens` | |
 | `n_total_tokens` | int | `n_input_tokens + n_output_tokens` | Harbor's input count already includes cache, so cache is not added again. Null if both are null |
 | `cost_usd` | float | `agent_result.cost_usd` | Null for the oracle |
-| `confidence` | float | trial report | Not yet emitted, see **Open items** |
+| `token_cap` | int | `--token-cap` | 5,000,000 unless overridden |
+| `capped_tokens` | bool | `n_total_tokens > token_cap` | Null when tokens are unknown |
+| `capped_time` | bool | `exception_info.exception_type == AgentTimeoutError` | Harbor's 3,600 s agent limit |
+| `capped` | bool | `capped_tokens or capped_time` | Capped is not the same as failed |
+| `passed_within_cap` | bool | `passed and not capped` | The pass rate every Table 2 rate uses; see **Caps** |
+| `confidence` | float | `artifacts/**/report.md`, item 3 | See **Confidence** |
 | `notes` | str | derived | Parse problems, one short phrase each |
 
 ## Reported value
@@ -98,6 +103,30 @@ exactly on its tolerance can compute to `1.0000000000000002` in floating point, 
 rederive pass or fail from `normalized_error`; use `passed`. `normalized_error` describes
 how far off an answer was, it does not decide the outcome.
 
+## Caps
+
+One token cap for every agent, applied here after the run (`docs/protocols/trial-protocol.md`).
+Harbor has no token limit that works the same way for every agent, so no agent is
+stopped live; Lemonade Stand's own live stop is off by default for the same reason.
+
+- Tokens counted: `n_total_tokens`, that is input including cache plus output.
+- `capped_tokens` is true only when the total is strictly over the cap.
+- A capped trial keeps its `passed` value from the verifier, but `passed_within_cap` is
+  false. Use `passed_within_cap` for correctness rates and `passed` only to audit the cap.
+- A pass with unknown tokens gives `passed_within_cap` null, never true, and should be
+  investigated before analysis.
+
+## Confidence
+
+Read from `/app/report.md`, which every agent is asked to write (`harbor/report-request.md`)
+and the job configs collect as an artifact. The first number on the line naming confidence
+is taken, or on the next non-empty line when the heading stands alone. An echoed scale such
+as "(0 to 1)" is skipped, a percentage is divided by 100, and a value outside 0 to 1 is
+left null with `confidence_out_of_range` in `notes`. A `report.json` with a `confidence`
+key is also accepted. Notes record `report_missing`, `confidence_missing` or
+`confidence_not_numeric` when no value is found; the oracle writes no report and gets no
+note.
+
 ## Published values and tolerances
 
 Joined from `replicationbench-release/src/dataset/tasks/<paper_id>/<task_id>.json`, on
@@ -140,9 +169,8 @@ mismatches and the token fallbacks: 37 tests.
    collect `/app/result.json` as an artifact (pull request #5), which lands at
    `artifacts/app/result.json` where `read_reported_value` looks. Not yet confirmed on a
    real trial.
-2. **Confidence.** `harbor/report-request.md` asks every agent for `/app/report.md`, with
-   confidence as item 3 in Markdown. `read_confidence` still looks for `report.json`, so
-   it needs a Markdown parser for that file before `confidence` can be filled.
+2. **Confidence.** Read from `report.md` (see **Confidence**). Not yet confirmed on a
+   real trial.
 3. **Tokens and cost.** Every `agent_result` field is null in the oracle job, so the
    parser's per agent branches are written against the Harbor schema but untested. First
    real check is Person C's Terminus-2 and Claude Code runs.
@@ -151,5 +179,5 @@ mismatches and the token fallbacks: 37 tests.
 5. **Task count.** 90 tasks generated where the prospectus says 72. Person B's item, but
    it sets the denominator for every rate in Table 2.
 6. **Block and condition columns.** The Oct 21 column list asked for `block`,
-   `instruction_version`, `fault_id`, `repeat` and `capped` (3,600 s limit hit). None is
-   produced yet; they need either job-level metadata or a naming rule for job folders.
+   `instruction_version`, `fault_id` and `repeat`. `capped` is now produced; the
+   others are not yet, and need either job-level metadata or a naming rule for job folders.

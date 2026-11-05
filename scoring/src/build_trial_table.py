@@ -22,8 +22,12 @@ ROW_FIELDS = [
     "normalized_error", "normalized_error_vector",
     "wall_time_sec", "agent_exec_sec", "verifier_sec",
     "n_input_tokens", "n_cache_tokens", "n_output_tokens", "n_total_tokens",
-    "cost_usd", "confidence", "notes",
+    "cost_usd", "token_cap", "capped_tokens", "capped_time", "capped", "passed_within_cap",
+    "confidence", "notes",
 ]
+
+TOKEN_CAP = 5_000_000
+TIMEOUT_EXCEPTIONS = {"AgentTimeoutError"}
 
 TASK_NAME_RE = re.compile(r"replicationbench__(?P<paper>[^_].*?)__(?P<task>.+)$")
 
@@ -94,11 +98,40 @@ def read_reported_value(trial_dir):
     return None, "value_missing"
 
 
+_NUMBER_RE = re.compile(r"(?<![\w.])(\d*\.?\d+)\s*(%?)")
+_SCALE_RE = re.compile(r"\(?\s*(?:a number\s+)?(?:from\s+|between\s+)?0\s*(?:to|-|–|and)\s*1\s*\)?", re.I)
+
+
+def _confidence_from_markdown(text):
+    """Confidence from the report request's Markdown (harbor/report-request.md, item 3).
+
+    Takes the first number on the line that names confidence, or on the next non-empty
+    line when the heading stands alone. A percentage is divided by 100. Values outside
+    0 to 1 are rejected rather than clipped.
+    """
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if "confidence" not in line.lower():
+            continue
+        after = line[line.lower().index("confidence") + len("confidence"):]
+        candidates = [after] + [l for l in lines[i + 1:i + 3] if l.strip()][:1]
+        for chunk in candidates:
+            match = _NUMBER_RE.search(_SCALE_RE.sub(" ", chunk))
+            if not match:
+                continue
+            value = float(match.group(1))
+            if match.group(2) == "%":
+                value /= 100
+            return (value, None) if 0 <= value <= 1 else (None, "confidence_out_of_range")
+        return None, "confidence_not_numeric"
+    return None, "confidence_missing"
+
+
 def read_confidence(trial_dir):
     """Stated confidence from the trial's end-of-run report.
 
-    Open item 2 in the schema: no agent writes a report yet, so this finds nothing
-    today. Kept so the column appears as soon as Person C adds the report request.
+    The report request asks every agent for /app/report.md, collected as an artifact.
+    A report.json with a confidence key is also accepted.
     """
     for path in sorted(trial_dir.glob("artifacts/**/report.json")):
         try:
@@ -109,7 +142,40 @@ def read_confidence(trial_dir):
         for key in ("confidence", "stated_confidence"):
             if isinstance(obj, dict) and key in obj:
                 return obj[key], None
-    return None, None
+    for path in sorted(trial_dir.glob("artifacts/**/report.md")):
+        try:
+            return _confidence_from_markdown(path.read_text(errors="replace"))
+        except OSError:
+            continue
+    return None, "report_missing"
+
+
+def apply_caps(usage, exception_type, passed, token_cap=TOKEN_CAP):
+    """Study caps, applied identically to every agent after the run.
+
+    A trial over the token cap is capped and cannot pass within the cap, whatever its
+    reward. A trial stopped by Harbor's agent time limit is capped as well. Both stay
+    rows in the table: capped is not the same as failed (trial protocol).
+    """
+    total = usage.get("n_total_tokens")
+    capped_tokens = None if total is None else total > token_cap
+    capped_time = exception_type in TIMEOUT_EXCEPTIONS
+    capped = capped_time or bool(capped_tokens)
+    if passed is None:
+        within = None
+    elif not passed or capped:
+        within = False
+    elif capped_tokens is None:
+        within = None
+    else:
+        within = True
+    return {
+        "token_cap": token_cap,
+        "capped_tokens": capped_tokens,
+        "capped_time": capped_time,
+        "capped": capped,
+        "passed_within_cap": within,
+    }
 
 
 # --- normalized error -------------------------------------------------------
@@ -266,7 +332,7 @@ def _json_cell(value):
     return value
 
 
-def build_row(trial_dir, task_defs):
+def build_row(trial_dir, task_defs, token_cap=TOKEN_CAP):
     with open(trial_dir / "result.json") as fh:
         result = json.load(fh)
 
@@ -279,7 +345,11 @@ def build_row(trial_dir, task_defs):
     rewards = verifier_result.get("rewards") or {}
     reward = rewards.get("reward")
 
-    if result.get("exception_info") or (trial_dir / "exception.txt").exists():
+    exception_type = (result.get("exception_info") or {}).get("exception_type")
+    if exception_type in TIMEOUT_EXCEPTIONS:
+        status = "capped"
+        notes.append("agent_time_limit")
+    elif result.get("exception_info") or (trial_dir / "exception.txt").exists():
         status = "exception"
         notes.append("trial_raised_exception")
     elif reward is None:
@@ -311,8 +381,12 @@ def build_row(trial_dir, task_defs):
     model = model or agent_config.get("model_name")
 
     usage = read_usage(result.get("agent_result"))
+    passed = None if reward is None else (reward == 1)
+    caps = apply_caps(usage, exception_type, passed, token_cap)
+    if caps["capped_tokens"]:
+        notes.append("over_token_cap")
     confidence, confidence_note = read_confidence(trial_dir)
-    if confidence_note:
+    if confidence_note and agent_info.get("name") != "oracle":
         notes.append(confidence_note)
 
     whole = {"started_at": result.get("started_at"), "finished_at": result.get("finished_at")}
@@ -330,7 +404,7 @@ def build_row(trial_dir, task_defs):
         "model": model,
         "status": status,
         "reward": reward,
-        "passed": None if reward is None else (reward == 1),
+        "passed": passed,
         "reported_value": _json_cell(reported),
         "expected_value": _json_cell(expected),
         "tolerance": _json_cell(tolerance),
@@ -346,6 +420,7 @@ def build_row(trial_dir, task_defs):
         "confidence": confidence,
         "notes": "; ".join(notes),
         **usage,
+        **caps,
     }
 
 
@@ -368,14 +443,14 @@ def find_trial_dirs(jobs_dir):
     return found
 
 
-def build_table(jobs_dir, tasks_dir):
+def build_table(jobs_dir, tasks_dir, token_cap=TOKEN_CAP):
     task_defs = load_task_defs(tasks_dir)
     if not task_defs:
         raise SystemExit(f"no task definitions under {tasks_dir}")
     rows = []
     for trial_dir in find_trial_dirs(jobs_dir):
         try:
-            rows.append(build_row(trial_dir, task_defs))
+            rows.append(build_row(trial_dir, task_defs, token_cap))
         except (OSError, ValueError) as exc:
             rows.append({
                 "job_dir": trial_dir.parent.name,
@@ -401,9 +476,11 @@ def main():
     parser.add_argument("jobs_dir", help="a Harbor job directory, or a parent of several")
     parser.add_argument("tasks_dir", help="replicationbench-release/src/dataset/tasks")
     parser.add_argument("-o", "--out", default="scoring/out/trial-table.csv")
+    parser.add_argument("--token-cap", type=int, default=TOKEN_CAP,
+                        help="per-trial token cap applied to every agent (default 5,000,000)")
     args = parser.parse_args()
 
-    rows = build_table(args.jobs_dir, args.tasks_dir)
+    rows = build_table(args.jobs_dir, args.tasks_dir, args.token_cap)
     write_csv(rows, args.out)
 
     ok = sum(1 for r in rows if r.get("status") == "ok")
@@ -413,6 +490,8 @@ def main():
     print(f"  passed              {sum(1 for r in rows if r.get('passed'))}")
     print(f"  normalized_error    {scored}")
     print(f"  tokens or cost      {sum(1 for r in rows if r.get('n_total_tokens') or r.get('cost_usd'))}")
+    print(f"  passed within cap   {sum(1 for r in rows if r.get('passed_within_cap'))}")
+    print(f"  capped              {sum(1 for r in rows if r.get('capped'))}")
     print(f"  confidence          {sum(1 for r in rows if r.get('confidence') is not None)}")
 
 
