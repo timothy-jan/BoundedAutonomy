@@ -4,7 +4,7 @@ from pathlib import Path
 
 SEED = 20261020
 STUDENTS = ["Timothy", "Person A", "Person B", "Person C", "Person D", "Person E"]
-PAPERS = ["gw_nsbh", "gw_cosmo", "fable_mps", "mars_clouds"]
+PAPERS = ["gw_nsbh", "gw_cosmo", "mars_clouds", "galaxy_manifold"]
 CONDITIONS = ["human-assisted", "checkpoint"]
 
 

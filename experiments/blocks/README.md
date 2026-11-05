@@ -1,10 +1,11 @@
-# Automated session blocks (Table 1)
+# Trial blocks (prospectus Table 1)
 
-| Block | Design | Sessions |
-|---|---|---|
-| model-harness | 5 papers, 2 models, 2 harnesses, 5 repeats | 100 |
-| architecture-variants | 5 papers, 2 models, 4 variants, 3 repeats | 120 |
-| paraphrase | 5 papers, 2 rewordings, 2 models, 2 harnesses | 40 |
-| fault-injection | 5 papers, 3 fault types, 2 harnesses, 1 model | 30 |
+| Block | Design | Trials | Config |
+|---|---|---|---|
+| Reliability core | 72 tasks × 8 configurations × 3 repeats | 1,728 | `harbor/configs/core.yaml` |
+| Paraphrase | 25 tasks × 2 rewordings × 4 Model A configurations | 200 | To write |
+| Fault injection | 5 papers × 3 fault types × 8 configurations | 120 | To write |
+| Pilot | 6 tasks × 8 configurations | 48 | `harbor/configs/pilot.yaml` |
+| Total | | 2,096 | |
 
-Each block has one CSV of session configs, one row per session.
+Human conditions: 24 paper-level sessions, outside Harbor.

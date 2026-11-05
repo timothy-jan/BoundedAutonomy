@@ -1,5 +1,5 @@
 # experiments
 
-- `pilot/` One paper, one model, three repeats, one pass of each variant (§4.4).
-- `blocks/` Session matrices for the four automated blocks (Table 1).
-- `human-conditions/` Randomized assignments for the 24 human condition sessions (§3).
+- `pilot/` Pilot plan: 6 tasks on all 8 configurations.
+- `blocks/` The trial blocks of Table 1.
+- `human-conditions/` Randomized assignments for the 24 human sessions (Claude Code on Model A).
