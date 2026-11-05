@@ -1,6 +1,8 @@
 jobs_dir: jobs
 n_attempts: 1
 timeout_multiplier: 1.0
+extra_instruction_paths: [harbor/report-request.md]
+artifacts: [/app/result.json, /app/report.md]
 agents:
   - name: terminus-2
     model_name: anthropic/MODEL_A
@@ -8,12 +10,16 @@ agents:
     model_name: openai/MODEL_B
   - name: mini-swe-agent
     model_name: anthropic/MODEL_A
+    kwargs: {version: "2.4.6"}
   - name: mini-swe-agent
     model_name: openai/MODEL_B
+    kwargs: {version: "2.4.6"}
   - name: claude-code
     model_name: anthropic/MODEL_A
+    kwargs: {version: "2.1.312"}
   - name: codex
     model_name: openai/MODEL_B
+    kwargs: {version: "0.165.0"}
 orchestrator:
   type: local
   n_concurrent_trials: 8
