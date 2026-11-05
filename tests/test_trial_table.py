@@ -232,8 +232,28 @@ def test_usage_from_agent_result():
     usage = read_usage({
         "n_input_tokens": 100, "n_cache_tokens": 20, "n_output_tokens": 5, "cost_usd": 0.01,
     })
-    assert usage["n_total_tokens"] == 125
+    assert usage["n_total_tokens"] == 105
     assert usage["cost_usd"] == 0.01
+
+
+def test_cache_is_not_counted_twice_in_the_total():
+    """Harbor's n_input_tokens includes cache; n_cache_tokens is a subset of it."""
+    usage = read_usage({
+        "n_input_tokens": 1000, "n_cache_tokens": 900, "n_output_tokens": 50, "cost_usd": 0.1,
+    })
+    assert usage["n_total_tokens"] == 1050
+
+
+def test_value_scan_is_fast_on_a_large_log():
+    import time
+    text = ('{"type": "assistant", "message": {"content": "x"}}\n' * 20000) + '{"value": 3.5}\n'
+    began = time.time()
+    assert _value_from_json_text(text) == 3.5
+    assert time.time() - began < 5
+
+
+def test_nested_value_object_returns_the_outer_value():
+    assert _value_from_json_text('log {"value": {"a": 1}} end') == {"a": 1}
 
 
 def test_usage_is_null_for_the_oracle():

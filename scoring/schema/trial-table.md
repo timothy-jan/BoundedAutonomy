@@ -41,7 +41,7 @@ Rows are never aggregated in this file. Consistency and variance measures group 
 | `n_input_tokens` | int | `agent_result.n_input_tokens` | Null for the oracle |
 | `n_cache_tokens` | int | `agent_result.n_cache_tokens` | |
 | `n_output_tokens` | int | `agent_result.n_output_tokens` | |
-| `n_total_tokens` | int | sum of the three | Null if all three are null |
+| `n_total_tokens` | int | `n_input_tokens + n_output_tokens` | Harbor's input count already includes cache, so cache is not added again. Null if both are null |
 | `cost_usd` | float | `agent_result.cost_usd` | Null for the oracle |
 | `confidence` | float | trial report | Not yet emitted, see **Open items** |
 | `notes` | str | derived | Parse problems, one short phrase each |
