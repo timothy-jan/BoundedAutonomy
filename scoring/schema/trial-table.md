@@ -150,7 +150,8 @@ agree.
 ## Validation of the first run
 
 `scoring/out/oracle-job-2026-10-27.csv` is this schema applied to Person B's first oracle
-job. The oracle writes the published answer, so it is a check on the whole path from
+job, kept as `scoring/fixtures/oracle-job-2026-10-27.zip` (regeneration command in
+`scoring/fixtures/README.md`). The oracle writes the published answer, so it is a check on the whole path from
 export to metric:
 
 - 92 rows: 85 `status = ok`, all with `reward = 1`; 7 `status = exception`.

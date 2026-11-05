@@ -356,3 +356,24 @@ def test_confidence_without_a_number():
 
 def test_report_without_confidence():
     assert _confidence_from_markdown("Method: fit\nResult: 70") == (None, "confidence_missing")
+
+
+# --- oracle fixture -----------------------------------------------------------
+
+def test_oracle_fixture_parses_end_to_end(tmp_path):
+    import zipfile
+    from build_trial_table import find_trial_dirs
+    import build_trial_table
+
+    fixture = Path(__file__).resolve().parents[1] / "scoring" / "fixtures" / "oracle-job-2026-10-27.zip"
+    with zipfile.ZipFile(fixture) as archive:
+        archive.extractall(tmp_path)
+    trials = find_trial_dirs(tmp_path / "jobs")
+    rows = [build_trial_table.build_row(t, {}) for t in trials]
+    statuses = [r["status"] for r in rows]
+    assert len(rows) == 92
+    assert statuses.count("ok") == 85
+    assert statuses.count("exception") == 7
+    assert sum(1 for r in rows if r["passed"]) == 85
+    assert all(r["capped"] is False for r in rows)
+    assert all(r["passed_within_cap"] is None for r in rows if r["passed"])
