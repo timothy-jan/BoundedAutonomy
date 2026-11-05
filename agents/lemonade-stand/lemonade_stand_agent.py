@@ -197,9 +197,6 @@ class LemonadeStandAgent(BaseInstalledAgent):
             filename="spend-limits.json",
         )
 
-    def get_version_command(self) -> str | None:
-        return f"cat {LS_SRC}/VERSION"
-
     # --------------------------------------------------------------------- run
 
     @with_prompt_template

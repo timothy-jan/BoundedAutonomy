@@ -34,6 +34,14 @@ exists in this version, so there is none here.
    `/api/halt` and marks the trial capped.
 4. Bots read task inputs and write `/app/result.json` through their file
    tools. Harbor's verifier then scores it like any other agent.
+   `run_gw_cosmo.sh` passes `--artifact /app/result.json`, which copies the
+   answer to `<trial>/artifacts/app/result.json` where
+   `scoring/src/build_trial_table.py` reads the reported value. Pass the same
+   flag when calling `harbor run` directly.
+
+Copying `/assets` only helps with text data. rc.57's file tools read UTF-8
+text only, up to 1 MiB per file, so binary data in `/app/assets` (FITS,
+`.npy`, HDF5) stays out of the bots' reach even when it was copied.
 
 ## Run
 
@@ -59,6 +67,7 @@ PYTHONPATH=agents/lemonade-stand harbor run \
   -p <gw_cosmo task dir> \
   -a lemonade_stand_agent:LemonadeStandAgent \
   -m anthropic/claude-sonnet-5 \
+  --artifact /app/result.json \
   --ae LS_SOURCE_DIR=$HOME/lemonade-stand
 ```
 
@@ -86,7 +95,8 @@ Each trial's `agent/` folder also holds:
 
 * `usage.json`: the totals above plus `per_model`, `bots{agent_id: cost_usd}`,
   `n_calls`, `n_tool_calls`, `final_status` (`done`, `timeout`, `error`,
-  `token_cap`, `spend_limit`, `http_<code>`), `capped`, `capped_at_tokens`,
+  `token_cap`, `spend_limit`, `http_<code>`, `connection_error`,
+  `stream_error`), `capped`, `capped_at_tokens`,
   `max_tokens`, `wall_sec`, `model_label`, `model_used`, `models_seen`,
   `n_downgrades`, `n_escalations`, `n_spend_refusals`, `server_version`,
   `fake`.

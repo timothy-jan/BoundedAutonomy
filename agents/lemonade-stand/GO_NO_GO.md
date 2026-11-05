@@ -84,9 +84,10 @@ other's limit.
 
 The limit must never end a trial before the 5M-token cap does. At 5M tokens
 (95% input with no cache discount, 5% output), rc.57's own prices give at
-most $30 for Opus 5, $12 for Sonnet 5, $8 for GPT-5. The default is
-**$100 per trial**. Raise it to $150 only for GPT-6 Astra (up to $90 at 20%
-output). Set per run with `--ak daily_usd_limit=150`.
+most $30 for Opus 5, $12 for Sonnet 5, $8 for GPT-5, and $90 for GPT-6
+Astra at 20% output. The default, **$100 per trial**, covers all of them.
+Astra leaves only $10 of headroom, so raise the limit for Astra runs if you
+want margin for the call that settles after the cap (`--ak daily_usd_limit=150`).
 
 Total exposure with 8 parallel trials is at most 8 × $100. The real guard is
 the monthly limit on each provider key (`docs/budget.md`).
