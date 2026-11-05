@@ -20,12 +20,14 @@ and tested end to end in fake-model mode on Oct 27.
 from __future__ import annotations
 
 import argparse
+import http.client
 import json
+import socket
 import sqlite3
 import sys
 import threading
 import time
-import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -126,51 +128,86 @@ class TokenCap(threading.Thread):
                 return
 
 
+class StreamState:
+    def __init__(self):
+        self.text, self.frames, self.status = "", [], "running"
+
+    def feed(self, raw: bytes, out) -> None:
+        line = raw.decode("utf-8", "replace").strip()
+        if not line.startswith("data:"):
+            return
+        try:
+            frame = json.loads(line[5:].strip())
+        except json.JSONDecodeError:
+            return
+        out.write(json.dumps(frame) + "\n")
+        out.flush()
+        self.frames.append(frame)
+        kind = frame.get("type")
+        if kind == "delta":
+            self.text += frame.get("text") or ""
+        elif kind == "retract":
+            # server takes back an unfinished tail before rewriting it
+            tail = frame.get("text") or ""
+            if tail and self.text.endswith(tail):
+                self.text = self.text[: -len(tail)]
+        elif kind == "done":
+            # rc.57 reports a failed model call inside the done frame
+            # (chat.py: meta["error"] = {"code", "message"}), not as a
+            # separate error frame.
+            if frame.get("error"):
+                self.status = "provider_error"
+            elif self.status not in ("error", "provider_error", "timeout"):
+                self.status = "done"  # group chats send one per speaker; keep reading
+        elif kind == "error":
+            self.status = "error"
+
+
 def stream_chat(base, token, body, timeout, out_path):
-    req = urllib.request.Request(
-        base + "/api/chat",
-        data=json.dumps(body).encode(),
-        headers={"X-Stand": token, "Content-Type": "application/json"},
-        method="POST",
-    )
-    text, frames, status = "", [], "running"
+    """POST the chat and read the event stream until it ends or ``timeout``
+    seconds pass. The stream is read on a worker thread so the deadline holds
+    even when the server goes quiet or sends only keepalive lines; at the
+    deadline the socket is shut down, which cancels the turn."""
+    url = urllib.parse.urlsplit(base)
+    conn = http.client.HTTPConnection(url.hostname, url.port or 80, timeout=max(timeout, 1) + 30)
+    state = StreamState()
     deadline = time.time() + timeout
-    with urllib.request.urlopen(req, timeout=timeout) as resp, out_path.open("w") as out:
-        for raw in resp:
-            line = raw.decode("utf-8", "replace").strip()
-            if not line.startswith("data:"):
-                continue
-            try:
-                frame = json.loads(line[5:].strip())
-            except json.JSONDecodeError:
-                continue
-            out.write(json.dumps(frame) + "\n")
-            out.flush()
-            frames.append(frame)
-            kind = frame.get("type")
-            if kind == "delta":
-                text += frame.get("text") or ""
-            elif kind == "retract":
-                # server takes back an unfinished tail before rewriting it
-                tail = frame.get("text") or ""
-                if tail and text.endswith(tail):
-                    text = text[: -len(tail)]
-            elif kind == "done":
-                # rc.57 reports a failed model call inside the done frame
-                # (chat.py: meta["error"] = {"code", "message"}), not as a
-                # separate error frame.
-                if frame.get("error"):
-                    status = "provider_error"
-                elif status not in ("error", "provider_error"):
-                    status = "done"  # group chats send one per speaker; keep reading
-            elif kind == "error":
-                status = "error"
-            if time.time() > deadline:
-                status = "timeout"
-                break  # leaving the with-block closes the socket, which cancels the turn
-    if status == "running":
-        status = "done"  # stream closed normally without an explicit frame
-    return text, frames, status
+    conn.request(
+        "POST", "/api/chat", body=json.dumps(body).encode(),
+        headers={"X-Stand": token, "Content-Type": "application/json"},
+    )
+    sock = conn.sock
+    resp = conn.getresponse()
+    if resp.status != 200:
+        detail = resp.read()[:300]
+        conn.close()
+        return "", [], f"http_{resp.status}: {detail!r}"
+
+    def read():
+        try:
+            with out_path.open("w") as out:
+                for raw in resp:
+                    state.feed(raw, out)
+        except (OSError, ValueError, http.client.HTTPException) as exc:
+            if time.time() >= deadline:
+                state.status = "timeout"
+            elif state.status == "running":
+                state.status = f"stream_error: {type(exc).__name__}"
+
+    reader = threading.Thread(target=read, daemon=True)
+    reader.start()
+    reader.join(max(deadline - time.time(), 0))
+    if reader.is_alive():
+        state.status = "timeout"
+        try:
+            sock.shutdown(socket.SHUT_RDWR)
+        except OSError:
+            pass
+        reader.join(10)
+    conn.close()
+    if state.status == "running":
+        state.status = "done"  # stream closed normally without an explicit frame
+    return state.text, list(state.frames), state.status
 
 
 def usage_from_ledger(db_path: Path) -> dict:
@@ -185,7 +222,7 @@ def usage_from_ledger(db_path: Path) -> dict:
     per_model, bots = {}, {}
     for model, agent, tin, cread, cwrite, tout, usd in rows:
         u = per_model.setdefault(
-            model, {"n_input_tokens": 0, "n_output_tokens": 0, "n_cache_tokens": 0, "cost_usd": 0.0}
+            model or "unknown", {"n_input_tokens": 0, "n_output_tokens": 0, "n_cache_tokens": 0, "cost_usd": 0.0}
         )
         # rc.57's tokens_in excludes cached input for both providers
         # (Anthropic reports it separately; the OpenAI path subtracts it).
@@ -237,10 +274,10 @@ def main() -> int:
         reply, frames, status = stream_chat(
             a.base_url, token, body, a.timeout - (time.time() - start), log / "stream.jsonl"
         )
-    except urllib.error.HTTPError as exc:
-        reply, frames, status = "", [], f"http_{exc.code}: {exc.read()[:300]!r}"
     except TimeoutError:
         reply, frames, status = "", [], "timeout"
+    except (OSError, http.client.HTTPException) as exc:
+        reply, frames, status = "", [], f"connection_error: {exc}"
     finally:
         if cap:
             cap.stopping.set()
@@ -283,7 +320,8 @@ def main() -> int:
                       "version": health.get("version")}))
     # A trial whose model was never reached is a setup failure, not a score of
     # 0: exit non-zero so Harbor records an exception.
-    failed = status in ("error", "provider_error") or status.startswith("http_")
+    failed = status in ("error", "provider_error") or status.startswith(
+        ("http_", "connection_error", "stream_error"))
     return 1 if failed else 0
 
 

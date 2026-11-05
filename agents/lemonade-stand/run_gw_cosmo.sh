@@ -33,6 +33,7 @@ for model in "$@"; do
     -p "$TASK" \
     -a lemonade_stand_agent:LemonadeStandAgent \
     -m "$model" \
+    --artifact /app/result.json \
     --ae LS_SOURCE_DIR="$SRC" \
     --ak daily_usd_limit="${DAILY_USD_LIMIT:-100}" \
     --ak max_tokens="${MAX_TOKENS:-5000000}" \

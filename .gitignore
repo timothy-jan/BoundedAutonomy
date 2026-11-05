@@ -12,3 +12,6 @@ venv/
 
 # Local Harbor job exports (Person B hands these over out of band)
 jobs/
+
+# Probe output from agents/lemonade-stand/probe_headless.sh
+agents/lemonade-stand/probe-*.log
