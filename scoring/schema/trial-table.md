@@ -104,10 +104,10 @@ Joined from `replicationbench-release/src/dataset/tasks/<paper_id>/<task_id>.jso
 `paper_id` and `task_id`. All 87 distinct tasks in the first oracle job join, and all are
 `kind: numeric`.
 
-`tasks/tasks.csv` is **not** the join source yet. It holds 30 rows from the five paper
-scope and matches only 22 of the 87 tasks run. When the 72 row file in pull request #1
-merges, this schema changes to join on `tasks.csv` and to check it against the
-ReplicationBench files, since rule 4 in `tasks/README.md` requires the two to agree.
+`tasks/tasks.csv` is **not** the join source yet. With pull request #1 it holds the 72
+row task set, so the next change to this schema is to join on `tasks.csv` and check it
+against the ReplicationBench files, since rule 4 in `tasks/README.md` requires the two to
+agree.
 
 ## Known shapes in the data
 
@@ -136,13 +136,13 @@ mismatches and the token fallbacks: 37 tests.
 
 ## Open items
 
-1. **Reported value for real agents.** Nothing copies `/app/result.json` out of the
-   container; `artifacts/manifest.json` collects only `/logs/artifacts`. Until Person B
-   adds it to the job config, or the verifier prints the parsed value, correctness and
-   normalized error cannot be computed for any non oracle trial. Blocks Person C's handoff.
-2. **Confidence.** No trial writes a report, because the shared instruction does not ask
-   for one. Person C owns adding the request; this schema needs the file path and the
-   field name before `confidence` can be filled.
+1. **Reported value for real agents.** `harbor/configs/pilot.yaml` and `core.yaml` now
+   collect `/app/result.json` as an artifact (pull request #5), which lands at
+   `artifacts/app/result.json` where `read_reported_value` looks. Not yet confirmed on a
+   real trial.
+2. **Confidence.** `harbor/report-request.md` asks every agent for `/app/report.md`, with
+   confidence as item 3 in Markdown. `read_confidence` still looks for `report.json`, so
+   it needs a Markdown parser for that file before `confidence` can be filled.
 3. **Tokens and cost.** Every `agent_result` field is null in the oracle job, so the
    parser's per agent branches are written against the Harbor schema but untested. First
    real check is Person C's Terminus-2 and Claude Code runs.
@@ -150,3 +150,6 @@ mismatches and the token fallbacks: 37 tests.
    cover tool call counts, which Table 2 needs for resource consistency.
 5. **Task count.** 90 tasks generated where the prospectus says 72. Person B's item, but
    it sets the denominator for every rate in Table 2.
+6. **Block and condition columns.** The Oct 21 column list asked for `block`,
+   `instruction_version`, `fault_id`, `repeat` and `capped` (3,600 s limit hit). None is
+   produced yet; they need either job-level metadata or a naming rule for job folders.
