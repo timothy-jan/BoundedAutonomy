@@ -1,0 +1,29 @@
+Trial 1:
+the DNS/download failures, the disk-full crash around task 35/90, and the 90 vs 72 task count. The doc wants failure causes and disk use recorded.
+
+Trial 2:
+changes made:
+  - ran each dataset in sets of 10 by creating batches 
+  - still ran 90 of the datasets instead of 72 since that was still the output after running the exclude file 
+  - 80 of the 90 were able to pass their tests and return the results in jobs folder 
+  - resetting disk space after each batch runs 
+
+Batch 06 of the 00-08 did not run, these are the titles listed in that set: 
+   gw_nsbh_spin_constraint
+   hubble_trails_classifier_performance 
+   hubble_trails_satellite_chance_post2020_acis
+   hubble_trails_satellite_chance_post2020_uvis
+   hubble_trails_satellite_chance_pre2020_uvis
+   hubble_trails_satellite_chance_pret2020_acis
+   hubble_trails_satellite_fractions
+   hubble_trails_satellite_fractions_increase
+   lensing_dr6_growth_alens
+   lensing_dr6_growth_params
+
+
+Total times per batch: 
+xxxxx
+
+
+Total disk usage per task: 
+xxxx
