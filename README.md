@@ -2,44 +2,45 @@
 
 NewSpace at Berkeley research project, Fall 2026. Sponsor: Major Sean P. Allen.
 
-We run Lemonade Stand at one frozen version, four architecture variants inside it, and a reference scaffold on about 20 ReplicationBench tasks from five papers. Sessions vary by autonomy condition, harness, and model. Every result is scored outside the system against a published value with a tolerance fixed in advance.
+A reliability benchmark for science agents. 72 ReplicationBench tasks from 14 papers run through [Harbor](https://github.com/harbor-framework/harbor) on four harnesses (Terminus-2, mini-SWE-agent, Claude Code or Codex, and Lemonade Stand) and two models. The benchmark adds repeated trials, reworded instructions, injected faults, autonomy conditions and traceability checks to ReplicationBench's single success score. Design: [revised prospectus](https://claude.ai/artifact/GYbHkatnN7xqNVVrATNQas).
 
 ## Layout
 
 | Folder | Contents | Prospectus | Owner |
 |---|---|---|---|
-| `docs/` | Schedule, protocols, decision log | §7, §8 | Timothy |
-| `tasks/` | Task subset, published values, tolerances, paraphrases | §2, §4.2 | Timothy, Person A |
-| `harness/` | Frozen Lemonade Stand tag, architecture variants, reference scaffold | §4.1 | Person C, Person B|
-| `driver/` | Scripted run driver and session configs | §3, §4.1 | Person D |
+| `docs/` | Prospectus, schedule, protocols, decision log, compute, budget | §7, §8 | Timothy |
+| `tasks/` | The 72 tasks, published values, tolerances, rewordings | §3 | Timothy, Person A |
+| `harbor/` | Pinned Harbor version, excluded papers, job configs for each block | §4.1 | Person B |
+| `agents/` | One folder per harness: version, settings, architecture; the Lemonade Stand Harbor agent | §3, §4.1 | Persons C, D |
 | `faults/` | Fault injection set | §4.3 | Person A |
 | `reviewer/` | AI Scientist Automated Reviewer setup and adapted form | §3 | Person B |
-| `scoring/` | Logging schema and metric pipeline | §4.4, Table 2 | Person E |
-| `experiments/` | Pilot and session block definitions, human condition assignments | §3, §4.4, Table 1 | Timothy |
-| `runs/` | Session exports (not committed) | §3 | Person D |
-| `analysis/` | Traceability sample, failure taxonomy, variance split | §4.3, Table 2 | Person E |
+| `scoring/` | Trial table and reliability metrics from Harbor outputs | §4.4 | Person E |
+| `experiments/` | Pilot plan, block definitions, human condition assignments | §3, §4.2 | Timothy |
+| `runs/` | Harbor job outputs (not committed) | §3 | Person B |
+| `analysis/` | Traceability sample, failure taxonomy, variance split | §4.3, §4.4 | Person E |
 | `paper/` | Draft paper, figures, AI use disclosure | §8 | Everyone |
 | `presentation/` | Final presentation | §8 | Everyone |
 | `evidence/` | Evidence package linking each result to its sources | §8 | Timothy |
-| `tests/` | Tests for driver, scoring, and faults | §8 | Everyone |
+| `tests/` | Tests for scoring and fault injectors | §8 | Everyone |
 
 ## Rules
 
 All changes go through pull requests; see `CONTRIBUTING.md`.
 
-1. Every session uses the frozen Lemonade Stand tag in `harness/lemonade-stand/FROZEN_TAG.md`.
-2. `tasks/tasks.csv` is unlocked for pull requests until the Oct 26 pilot, then relocked (see `tasks/README.md`).
-3. Any change to scope, sequence, or method is recorded in `docs/decisions/decision-log.md` (§7).
-4. Scoring reads only from retained session exports. Nothing in `scoring/` runs inside a session.
-5. Session exports and API keys are never committed.
+1. Tasks, published values and tolerances come unchanged from ReplicationBench.
+2. Every agent runs the same instruction, container limits and time limit.
+3. `tasks/tasks.csv` is locked once the oracle run passes. Changes after that need a reason in the pull request.
+4. Any change to scope, sequence, or method is recorded in `docs/decisions/decision-log.md` (§7).
+5. Scoring reads only retained Harbor outputs. Nothing in `scoring/` runs inside a trial.
+6. Harbor job outputs and API keys are never committed.
 
 ## Milestones
 
 | Date | Milestone |
 |---|---|
-| Oct 9 | Scope and metric definitions signed off |
-| Oct 18 | Papers, task subset, and tolerances fixed; Lemonade Stand frozen |
-| Nov 3 | Pilot reviewed; session time, budget, and models confirmed |
-| Nov 24 | Planned sessions complete |
+| Oct 23 | Sponsor approves the revised design |
+| Oct 25 | Harbor oracle passes all 72 tasks; task file locked |
+| Nov 3 | Pilot reviewed; models, cost per trial and Lemonade Stand integration confirmed |
+| Nov 24 | All trials and human sessions complete |
 | Dec 11 | Draft paper complete and sent for release review |
-| Jan 4, 2027 | Preprint posted |
+| Jan 4, 2027 | Preprint posted and benchmark released |

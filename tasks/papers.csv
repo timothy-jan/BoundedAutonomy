@@ -1,6 +1,15 @@
-paper_id,source_id,title,authors,year,n_tasks,mean_difficulty,needs_gpu,human_condition_subset
-gw_nsbh,arXiv:2202.05164,Inferring the neutron star maximum mass and lower mass gap in neutron star--black hole systems with spin,"Christine Ye, Maya Fishbach",2022,9,3.8,no,yes
-gw_cosmo,arXiv:2103.14038,Cosmology with Standard Sirens at Cosmic Noon,"Christine Ye, Maya Fishbach",2021,4,2.9,no,yes
-astm3,arXiv:2411.08842,AstroM3: A self-supervised multimodal model for astronomy,"M. Rizhko, J. S. Bloom",2024,7,5.4,yes,no
-fable_mps,arXiv:2407.18349,Stirring the cosmic pot: how black hole feedback shapes the matter power spectrum in the FABLE simulations,"Sergio Martin-Alvarez, Vid Iršič, Sophie Koudmani, Martin A. Bourne, Leah Bigwood, Debora Sijacki",2025,8,5.1,no,yes
-mars_clouds,doi:10.1016/j.icarus.2023.115777,The Cloudspotting on Mars citizen science project: Seasonal and spatial cloud distributions observed by the Mars Climate Sounder,See DOI,2023,2,3.0,no,yes
+paper_id,source,title,field,year,n_tasks,mean_difficulty,needs_gpu,paraphrase_block,fault_block,human_condition_subset
+MUSE_outflows,https://arxiv.org/abs/2401.09576,Not So Windy After All: MUSE Disentangles AGN-driven Winds from Merger-induced Flows in Galaxies along the Starburst Sequence,Galactic winds,2024,5,2.2,no,no,no,no
+bayes_cal,https://arxiv.org/abs/2011.14052,Bayesian noise wave calibration for 21-cm global experiments,21-cm instrument calibration,2021,6,6,no,no,no,no
+chandra_representation,https://doi.org/10.1093/mnras/stae2808,Representation learning for time-domain high-energy astrophysics: Discovery of extragalactic fast X-ray transient XRT 200515,X-ray time-domain representation learning,2024,4,4.5,no,no,no,no
+disk_ridges,https://arxiv.org/pdf/1804.10175,Radial Distribution of Stellar Motions in Gaia DR2,Milky Way dynamics (Gaia),2018,5,2.4,no,no,no,no
+eht_resolve,https://arxiv.org/abs/2002.05218,"Variable structures in M87* from space, time and frequency resolved interferometry",Black hole imaging (M87*),2022,4,5.2,no,no,no,no
+galaxy_manifold,https://arxiv.org/abs/2210.05862,Galaxy Manifold: Characterizing and understanding galaxies with two parameters,Galaxy populations,2022,10,3.2,no,yes,yes,yes
+galaxy_soptics,https://arxiv.org/abs/2405.09855,sOPTICS: A Modified Density-Based Algorithm for Identifying Galaxy Groups/Clusters and Brightest Cluster Galaxies,Galaxy groups and clusters,2025,8,3.2,no,no,no,no
+gw_cosmo,https://arxiv.org/abs/2103.14038,Cosmology with Standard Sirens at Cosmic Noon,Gravitational-wave cosmology,2021,4,2.9,no,yes,yes,yes
+gw_nsbh,https://arxiv.org/abs/2202.05164,Inferring the neutron star maximum mass and lower mass gap in neutron star--black hole systems with spin,"Gravitational waves, neutron stars",2022,9,3.8,no,yes,yes,yes
+lensing_dr6_growth,https://arxiv.org/abs/2304.05202,The Atacama Cosmology Telescope: A Measurement of the DR6 CMB Lensing Power Spectrum and Its Implications for Structure Growth,CMB lensing,2024,2,5.5,no,no,no,no
+ls_cal,https://arxiv.org/abs/2307.00099,Receiver design for the REACH global 21-cm signal experiment,21-cm receiver design,2025,5,5.4,no,no,no,no
+mars_clouds,https://doi.org/10.1016/j.icarus.2023.115777,The Cloudspotting on Mars citizen science project: Seasonal and spatial cloud distributions observed by the Mars Climate Sounder,Planetary atmospheres,2023,2,3,no,yes,yes,yes
+trgb_std_candle,https://arxiv.org/abs/2406.19375v2,Calibrating and standardizing the Tip of the Red Giant Branch in the Small Magellanic Cloud using small-amplitude red giants,Distance ladder,2024,4,4,no,no,no,no
+ver_waves,https://arxiv.org/pdf/1809.03507,Vertical waves in the solar neighbourhood in Gaia DR2,Milky Way vertical waves (Gaia),2018,4,3.2,no,no,yes,no

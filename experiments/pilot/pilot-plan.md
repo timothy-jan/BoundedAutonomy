@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Paper | |
-| Model | |
-| Repeats | 3 |
-| Variants | One pass of each |
+| Tasks | gw_cosmo (4) and mars_clouds (2) |
+| Configurations | All 8 |
+| Repeats | 1 |
+| Trials | 48 |
 
-Outputs: time and cost per session, confirmation of both models, go or no-go for Nov 4.
+Outputs: time and cost per trial for each configuration, confirmation of both models, a working Lemonade Stand agent, and the decision criteria fixed before Nov 4.
