@@ -53,18 +53,18 @@ def split_task_name(task_name):
 
 # --- reported value ---------------------------------------------------------
 
+_DECODER = json.JSONDecoder()
+
+
 def _value_from_json_text(text):
     """Last JSON object in text that carries a 'value' key."""
     for start in reversed([m.start() for m in re.finditer(r"\{", text)]):
-        chunk = text[start:]
-        for end in range(len(chunk), 0, -1):
-            try:
-                obj = json.loads(chunk[:end])
-            except ValueError:
-                continue
-            if isinstance(obj, dict) and "value" in obj:
-                return obj["value"]
-            break
+        try:
+            obj, _ = _DECODER.raw_decode(text, start)
+        except ValueError:
+            continue
+        if isinstance(obj, dict) and "value" in obj:
+            return obj["value"]
     return None
 
 
@@ -223,6 +223,9 @@ def _span(block):
 def read_usage(agent_result):
     """Tokens and cost. Harbor normalizes installed agents into agent_result; fall back
     to model_usage for agents that only report per model totals.
+
+    Harbor's n_input_tokens already includes cached tokens, so the total is input plus
+    output; n_cache_tokens is the cached share of the input, not a third addend.
     """
     agent_result = agent_result or {}
     usage = {
@@ -247,7 +250,7 @@ def read_usage(agent_result):
             if found:
                 usage[key] = sum(found)
 
-    counts = [usage[k] for k in ("n_input_tokens", "n_cache_tokens", "n_output_tokens")]
+    counts = [usage[k] for k in ("n_input_tokens", "n_output_tokens")]
     present = [c for c in counts if c is not None]
     usage["n_total_tokens"] = sum(present) if present else None
     return usage
