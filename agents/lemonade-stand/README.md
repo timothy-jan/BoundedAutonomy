@@ -8,7 +8,7 @@ against Harbor 0.25.0. Checked on rc.57 and run through Harbor's own
 | File | What it is |
 |---|---|
 | `lemonade_stand_agent.py` | The Harbor agent (`BaseInstalledAgent`): `name()`, `install()`, `run()`, `populate_context_post_run()`. |
-| `ls_driver.py` | Runs inside the container, standard library only. Sends the instruction as one chat, enforces the token cap, saves the reply stream, final reply and usage. |
+| `ls_driver.py` | Runs inside the container, standard library only. Sends the instruction as one chat, optionally stops at a token cap, saves the reply stream, final reply and usage. |
 | `run_gw_cosmo.sh` | One gw_cosmo task on each model given. |
 | `probe_headless.sh` | Go/no-go check on a checkout: headless start (fake mode, no keys) and whether any code-execution tool exists. |
 | `GO_NO_GO.md` | Findings on rc.57, the open decision, daily-limit reasoning, message to Timothy. |
@@ -30,8 +30,9 @@ exists in this version, so there is none here.
 3. The driver waits for `/api/health`, maps the Harbor model to rc.57's
    roster label (unknown models fail the trial), posts the instruction to
    `/api/chat`, and reads the stream until it ends or `turn_timeout_sec`
-   (3,300 s) runs out. If the ledger reaches `max_tokens`, it calls
-   `/api/halt` and marks the trial capped.
+   (3,300 s) runs out. If `max_tokens` is set and the ledger reaches it, it
+   calls `/api/halt` and marks the trial capped. It is off by default: the
+   study's 5M token cap is applied to every agent in scoring, not live.
 4. Bots read task inputs and write `/app/result.json` through their file
    tools. Harbor's verifier then scores it like any other agent.
    `run_gw_cosmo.sh` passes `--artifact /app/result.json`, which copies the
@@ -75,7 +76,7 @@ The folder name has a hyphen, so it isn't a Python package; `PYTHONPATH` plus
 the bare module name is how Harbor imports it.
 
 Options (`--ak key=value`): `daily_usd_limit` (default 100),
-`max_tokens` (default 5000000, 0 = off), `effort` (auto/low/medium/high;
+`max_tokens` (default 0 = off; the study cap is applied in scoring), `effort` (auto/low/medium/high;
 Harbor's `--effort` also works), `fake` (true for the fake model),
 `turn_timeout_sec` (3300).
 

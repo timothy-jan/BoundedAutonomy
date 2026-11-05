@@ -289,3 +289,91 @@ def test_top_level_usage_wins_over_model_usage():
     })
     assert usage["n_input_tokens"] == 100
     assert usage["n_output_tokens"] == 7
+
+
+# --- caps -------------------------------------------------------------------
+
+from build_trial_table import _confidence_from_markdown, apply_caps
+
+
+def test_under_the_token_cap_passes_within_cap():
+    caps = apply_caps({"n_total_tokens": 4_999_999}, None, True)
+    assert (caps["capped_tokens"], caps["capped"], caps["passed_within_cap"]) == (False, False, True)
+
+
+def test_over_the_token_cap_cannot_pass_within_cap():
+    caps = apply_caps({"n_total_tokens": 5_000_001}, None, True)
+    assert (caps["capped_tokens"], caps["capped"], caps["passed_within_cap"]) == (True, True, False)
+
+
+def test_exactly_at_the_cap_is_not_capped():
+    assert apply_caps({"n_total_tokens": 5_000_000}, None, True)["capped_tokens"] is False
+
+
+def test_time_limit_marks_capped():
+    caps = apply_caps({"n_total_tokens": 10}, "AgentTimeoutError", False)
+    assert (caps["capped_time"], caps["capped"], caps["passed_within_cap"]) == (True, True, False)
+
+
+def test_unknown_tokens_leave_a_pass_unscored():
+    caps = apply_caps({"n_total_tokens": None}, None, True)
+    assert caps["capped_tokens"] is None
+    assert caps["passed_within_cap"] is None
+
+
+def test_a_failure_is_false_within_cap_even_without_tokens():
+    assert apply_caps({"n_total_tokens": None}, None, False)["passed_within_cap"] is False
+
+
+def test_custom_cap():
+    assert apply_caps({"n_total_tokens": 200}, None, True, token_cap=100)["capped_tokens"] is True
+
+
+# --- confidence from report.md ----------------------------------------------
+
+@pytest.mark.parametrize("text, value", [
+    ("3. Confidence: 0.8\n", 0.8),
+    ("**Confidence:** 0.65 (the fit converged)", 0.65),
+    ("## Confidence\n\n0.9\n", 0.9),
+    ("Confidence: 75%", 0.75),
+    ("3. Confidence: .4", 0.4),
+    ("Method: 3 steps\nConfidence: 1", 1.0),
+    ("3. Confidence (0 to 1): 0.7", 0.7),
+    ("Confidence, a number from 0 to 1: 0.35", 0.35),
+    ("Confidence [0-1]: 0.2", 0.2),
+])
+def test_confidence_from_markdown(text, value):
+    assert _confidence_from_markdown(text) == (pytest.approx(value), None)
+
+
+def test_confidence_above_one_is_rejected():
+    assert _confidence_from_markdown("Confidence: 8") == (None, "confidence_out_of_range")
+
+
+def test_confidence_without_a_number():
+    assert _confidence_from_markdown("Confidence: high") == (None, "confidence_not_numeric")
+
+
+def test_report_without_confidence():
+    assert _confidence_from_markdown("Method: fit\nResult: 70") == (None, "confidence_missing")
+
+
+# --- oracle fixture -----------------------------------------------------------
+
+def test_oracle_fixture_parses_end_to_end(tmp_path):
+    import zipfile
+    from build_trial_table import find_trial_dirs
+    import build_trial_table
+
+    fixture = Path(__file__).resolve().parents[1] / "scoring" / "fixtures" / "oracle-job-2026-10-27.zip"
+    with zipfile.ZipFile(fixture) as archive:
+        archive.extractall(tmp_path)
+    trials = find_trial_dirs(tmp_path / "jobs")
+    rows = [build_trial_table.build_row(t, {}) for t in trials]
+    statuses = [r["status"] for r in rows]
+    assert len(rows) == 92
+    assert statuses.count("ok") == 85
+    assert statuses.count("exception") == 7
+    assert sum(1 for r in rows if r["passed"]) == 85
+    assert all(r["capped"] is False for r in rows)
+    assert all(r["passed_within_cap"] is None for r in rows if r["passed"])

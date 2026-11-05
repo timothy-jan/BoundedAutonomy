@@ -86,7 +86,7 @@ class LemonadeStandAgent(BaseInstalledAgent):
         self,
         *args,
         daily_usd_limit: float = 100.0,
-        max_tokens: int = 5_000_000,
+        max_tokens: int = 0,
         effort: str = "auto",
         fake: bool = False,
         allow_unfrozen: bool = False,
@@ -103,14 +103,17 @@ class LemonadeStandAgent(BaseInstalledAgent):
         if effort not in ("auto", "low", "medium", "high"):
             raise ValueError("effort must be auto, low, medium or high (rc.57)")
         # rc.57's only dollar limit. Because the home is fresh per trial it is
-        # effectively a per-trial ceiling; it must stay above what max_tokens
-        # can cost so the token cap, not the app, ends a long trial. See
+        # effectively a per-trial ceiling; it must stay above what a long trial
+        # can cost so the app never ends a trial on its own. See
         # GO_NO_GO.md for the arithmetic. Default install value is $10/day.
         amount = float(daily_usd_limit)
         if not (math.isfinite(amount) and 0.01 <= amount <= 1_000_000):
             raise ValueError("daily_usd_limit must be between 0.01 and 1,000,000")
         self.daily_usd_limit = round(amount, 2)
-        # The study's per-session token cap (driver/README.md). 0 turns it off.
+        # Optional live stop inside Lemonade Stand. Off by default: the study's
+        # 5M token cap is applied to every agent alike in scoring
+        # (scoring/src/build_trial_table.py), so no agent is cut off mid-run.
+        # 0 turns it off.
         self.max_tokens = int(max_tokens)
         self.effort = effort
         # Lemonade Stand's built-in fake model: no API calls, no cost. For
