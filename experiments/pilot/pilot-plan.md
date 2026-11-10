@@ -7,4 +7,4 @@
 | Repeats | 1 |
 | Trials | 48 |
 
-Outputs: time and cost per trial for each configuration, confirmation of both models, a working Lemonade Stand agent, and the decision criteria fixed before Nov 4.
+Outputs: time and cost per trial for each configuration, confirmation of both models, a first run of every agent, and the decision criteria fixed before Nov 4.

@@ -107,7 +107,7 @@ how far off an answer was, it does not decide the outcome.
 
 One token cap for every agent, applied here after the run (`docs/protocols/trial-protocol.md`).
 Harbor has no token limit that works the same way for every agent, so no agent is
-stopped live; Lemonade Stand's own live stop is off by default for the same reason.
+stopped live.
 
 - Tokens counted: `n_total_tokens`, that is input including cache plus output.
 - `capped_tokens` is true only when the total is strictly over the cap.

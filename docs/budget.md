@@ -16,4 +16,3 @@ Tokens are recorded for every trial and capped at 5,000,000 per trial in scoring
 
 - [ ] One API key per model per role (agents, reviewer, human sessions)
 - [ ] A monthly limit on each key, sized from the pilot
-- [ ] Lemonade Stand's daily USD limit high enough for 8 parallel trials
