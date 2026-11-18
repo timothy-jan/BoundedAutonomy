@@ -35,6 +35,6 @@ harbor run -c adapters/replicationbench/replicationbench.yaml -a oracle \
 | `configs/pilot.yaml` | Pilot: 6 tasks (gw_cosmo, mars_clouds) × 8 configurations | 48 |
 | `configs/core.yaml` | Reliability core: 72 tasks × 8 configurations × 3 repeats | 1,728 |
 
-Replace `MODEL_A` and `MODEL_B` with the exact model version strings chosen at the pilot. Confirm that `n_attempts: 3` produces three independent trials per task and configuration. The Lemonade Stand entries are added once its Harbor agent works.
+Replace `MODEL_A` and `MODEL_B` with the exact model version strings chosen at the pilot. Confirm that `n_attempts: 3` produces three independent trials per task and configuration.
 
 Trial limits come from the adapter's `task.toml`: 3,600 s agent time, 1 CPU, 4 GB memory, no GPU.

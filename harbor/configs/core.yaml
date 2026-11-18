@@ -20,6 +20,12 @@ agents:
   - name: codex
     model_name: openai/MODEL_B
     kwargs: {version: "0.165.0"}
+  - name: openhands-sdk
+    model_name: anthropic/MODEL_A
+    kwargs: {version: "1.58.2"}
+  - name: openhands-sdk
+    model_name: openai/MODEL_B
+    kwargs: {version: "1.58.2"}
 orchestrator:
   type: local
   n_concurrent_trials: 8

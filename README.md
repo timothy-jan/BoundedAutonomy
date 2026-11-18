@@ -2,7 +2,7 @@
 
 NewSpace at Berkeley research project, Fall 2026. Sponsor: Major Sean P. Allen.
 
-A reliability benchmark for science agents. 72 ReplicationBench tasks from 14 papers run through [Harbor](https://github.com/harbor-framework/harbor) on four harnesses (Terminus-2, mini-SWE-agent, Claude Code or Codex, and Lemonade Stand) and two models. The benchmark adds repeated trials, reworded instructions, injected faults, autonomy conditions and traceability checks to ReplicationBench's single success score. Design: [revised prospectus](https://claude.ai/artifact/GYbHkatnN7xqNVVrATNQas).
+A reliability benchmark for science agents. 72 ReplicationBench tasks from 14 papers run through [Harbor](https://github.com/harbor-framework/harbor) on four harnesses (Terminus-2, mini-SWE-agent, Claude Code or Codex, and OpenHands) and two models. The benchmark adds repeated trials, reworded instructions, injected faults, autonomy conditions and traceability checks to ReplicationBench's single success score. Design: [revised prospectus](https://claude.ai/artifact/GYbHkatnN7xqNVVrATNQas).
 
 ## Layout
 
@@ -11,7 +11,7 @@ A reliability benchmark for science agents. 72 ReplicationBench tasks from 14 pa
 | `docs/` | Prospectus, schedule, protocols, decision log, compute, budget | §7, §8 | Timothy |
 | `tasks/` | The 72 tasks, published values, tolerances, rewordings | §3 | Timothy, Person A |
 | `harbor/` | Pinned Harbor version, excluded papers, job configs for each block | §4.1 | Person B |
-| `agents/` | One folder per harness: version, settings, architecture; the Lemonade Stand Harbor agent | §3, §4.1 | Persons C, D |
+| `agents/` | One folder per harness: version, settings, architecture | §3, §4.1 | Persons C, D |
 | `faults/` | Fault injection set | §4.3 | Person A |
 | `reviewer/` | AI Scientist Automated Reviewer setup and adapted form | §3 | Person B |
 | `scoring/` | Trial table and reliability metrics from Harbor outputs | §4.4 | Person E |
@@ -40,7 +40,7 @@ All changes go through pull requests; see `CONTRIBUTING.md`.
 |---|---|
 | Oct 23 | Sponsor approves the revised design |
 | Oct 25 | Harbor oracle passes all 72 tasks; task file locked |
-| Nov 3 | Pilot reviewed; models, cost per trial and Lemonade Stand integration confirmed |
+| Nov 3 | Pilot reviewed; models, cost per trial and OpenHands integration confirmed |
 | Nov 24 | All trials and human sessions complete |
 | Dec 11 | Draft paper complete and sent for release review |
 | Jan 4, 2027 | Preprint posted and benchmark released |

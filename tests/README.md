@@ -1,3 +1,3 @@
 # tests
 
-Tests for the driver, scorers, and fault injectors.
+Tests for the scorers and fault injectors.
