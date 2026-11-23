@@ -6,7 +6,7 @@ Harbor runs each trial in a container with 1 CPU and 4 GB of memory. Eight trial
 
 | Option | Notes |
 |---|---|
-| Lab workstation with Docker | Simplest if one is free for Nov 4 to 24 |
+| Lab workstation with Docker | Simplest if one is free for Dec 2 to 22 |
 | Cloud VM with Docker | Pay per hour; size for 8 CPUs and 32 GB |
 | Harbor cloud sandbox providers (Daytona, Modal and others) | Harbor runs trials there directly; useful for more parallelism |
 | Savio | Harbor supports Singularity environments; needs a faculty computing allowance |

@@ -34,13 +34,23 @@ All changes go through pull requests; see `CONTRIBUTING.md`.
 5. Scoring reads only retained Harbor outputs. Nothing in `scoring/` runs inside a trial.
 6. Harbor job outputs and API keys are never committed.
 
+## Status (Nov 17)
+
+- **Done:** task set (72 tasks), Harbor oracle run, all four harnesses set up in Harbor, the scorer, and one token cap for every agent.
+- **Blocked:** no paid trial can run until the sponsor's API credits arrive. The budget is $3,000.
+- **Open:** model versions, and a first real run of OpenHands (`agents/openhands/README.md`).
+
 ## Milestones
+
+Revised Nov 17. Dates from the pilot onward assume API keys by Nov 24 and slide day for day if the keys come later. Full schedule: [`docs/schedule/timeline.md`](docs/schedule/timeline.md).
 
 | Date | Milestone |
 |---|---|
-| Oct 23 | Sponsor approves the revised design |
-| Oct 25 | Harbor oracle passes all 72 tasks; task file locked |
-| Nov 3 | Pilot reviewed; models, cost per trial and OpenHands integration confirmed |
-| Nov 24 | All trials and human sessions complete |
-| Dec 11 | Draft paper complete and sent for release review |
-| Jan 4, 2027 | Preprint posted and benchmark released |
+| Oct 27 | Harbor oracle run complete; task file locked |
+| Nov 5 | Harbor design, four harnesses and scorer merged into `main` |
+| Keys (target Nov 24) | API credits and keys received; spending limits set |
+| Keys + 7 (target Dec 1) | Pilot reviewed; models, cost per trial and the OpenHands agent confirmed |
+| Dec 11 | All 24 human sessions complete |
+| Dec 22 | All 2,096 trials complete |
+| Jan 22, 2027 | Draft paper complete and sent for release review |
+| Feb 12, 2027 | Preprint posted and benchmark released |
